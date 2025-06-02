@@ -26,7 +26,7 @@ export default function Home() {
           <p>Loading...</p>
         </div>
       )}
-      <h1 className="text-6xl font-bold">Better Auth Test</h1>
+      <h2 className="text-6xl font-bold">Better Auth Test</h2>
       <p className="text-lg">
         By{" "}
         <a
@@ -39,9 +39,6 @@ export default function Home() {
       </p>
       {session && session.user ? (
         <div className="flex flex-col gap-2">
-          <Link href="/blog" className="text-blue-500 underline">
-            Create Blog
-          </Link>
           <button
             className="text-blue-500 underline cursor-pointer"
             onClick={async () =>
@@ -69,6 +66,9 @@ export default function Home() {
       ) : (
         <></>
       )}
+      <Link href="/blog" className="text-blue-500 underline">
+        Blog
+      </Link>
       <UsersList />
     </div>
   );

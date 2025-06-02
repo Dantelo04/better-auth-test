@@ -1,4 +1,4 @@
-import { getAllUsers } from "@/lib/actions/getAllUsers";
+import { getAllUsers } from "@/lib/services/getAllUsers";
 import { User } from "better-auth";
 import React, { useEffect, useState } from "react";
 

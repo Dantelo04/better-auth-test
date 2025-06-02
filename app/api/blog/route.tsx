@@ -3,7 +3,7 @@ import { connectDB } from "@/lib/config/db";
 import { Blog } from "@/lib/models/Blog";
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
-import { db } from "@/lib/config/db";
+import { getNativeUserById } from "@/lib/services/getNativeUser";
 
 // GET all blogs
 export async function GET() {
@@ -13,12 +13,10 @@ export async function GET() {
 
     const blogs = await Blog.find({}).exec();
 
-    // Get user details from the native MongoDB collection
-    const userCollection = db.collection("user");
-
     const blogsWithAuthor = await Promise.all(
       blogs.map(async (blog) => {
-        const author = await userCollection.findOne({ _id: blog.author });
+        const author = await getNativeUserById(blog.author);
+
         return {
           ...blog.toObject(),
           author: {
@@ -67,27 +65,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Create new blog
-    const blog = await Blog.create({
-      title,
-      content,
-      author: session.user.id,
-    });
-
     // Get author details from the native MongoDB collection
-    const userCollection = db.collection("user");
-    const author = await userCollection.findOne({ id: session.user.id });
+    const author = await getNativeUserById(session.user.id);
 
-    const blogWithAuthor = {
-      ...blog.toObject(),
-      author: {
-        id: author?.id,
-        name: author?.name,
-        email: author?.email,
-      },
-    };
+    //find blogs with the same author
+    const blogs = await Blog.find({ author: session.user.id });
 
-    return NextResponse.json({ blog: blogWithAuthor }, { status: 201 });
+    // Create new blog if author has <10 blogs
+    if (blogs.length < 10) {
+      await Blog.create({
+        title,
+        content,
+        author: session.user.id,
+      });
+    } else {
+      return NextResponse.json(
+        { error: "You have reached the maximum number of blogs" },
+        { status: 400 }
+      );
+    }
+
+    return NextResponse.json({ message: "Blog created" }, { status: 201 });
   } catch (error) {
     console.error("Error creating blog:", error);
     return NextResponse.json(
@@ -96,3 +94,4 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+

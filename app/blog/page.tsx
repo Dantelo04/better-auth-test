@@ -4,6 +4,8 @@ import { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import axios from "axios";
+import { getAllBlogs } from "@/lib/services/getAllBlogs";
+import DOMPurify from "dompurify";
 
 interface Blog {
   _id: string;
@@ -26,15 +28,9 @@ export default function BlogPage() {
   const { data: session } = authClient.useSession();
 
   const fetchBlogs = async () => {
-    try {
-      const { data } = await axios.get("/api/blog");
-      setBlogs(data.blogs);
-    } catch (err) {
-      console.error("Error fetching blogs:", err);
-      setError("Failed to fetch blogs");
-    } finally {
-      setIsLoading(false);
-    }
+    const blogs = await getAllBlogs();
+    setBlogs(blogs);
+    setIsLoading(false);
   };
 
   useEffect(() => {
@@ -69,15 +65,22 @@ export default function BlogPage() {
     }
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen p-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8">Loading blogs...</h1>
-        </div>
-      </div>
-    );
-  }
+  const handleDelete = async (blogId: string) => {
+    setIsLoading(true);
+    try {
+      await axios.delete(`/api/blog/${blogId}`);
+      fetchBlogs(); // Refresh the blog list
+    } catch (err) {
+      console.error("Error deleting blog:", err);
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.error || "Failed to delete blog");
+      } else {
+        setError("Failed to delete blog");
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen p-8">
@@ -123,17 +126,25 @@ export default function BlogPage() {
                 type="submit"
                 disabled={isSubmitting}
                 className={`bg-blue-500 text-white px-4 py-2 rounded ${
-                  isSubmitting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-blue-600'
+                  isSubmitting
+                    ? "opacity-50 cursor-not-allowed"
+                    : "hover:bg-blue-600"
                 }`}
               >
-                {isSubmitting ? 'Creating...' : 'Create Blog'}
+                {isSubmitting ? "Creating..." : "Create Blog"}
               </button>
             </form>
           </div>
         )}
 
         <div className="space-y-6">
-          {blogs.length === 0 ? (
+          {isLoading ? (
+            <article className="p-6 border rounded-lg space-y-4">
+              <div className="rounded h-4 w-full bg-neutral-700 animate-pulse"></div>
+              <div className="rounded h-4 w-full bg-neutral-700 animate-pulse max-w-[200px]"></div>
+              <div className="rounded h-4 w-full bg-neutral-700 animate-pulse max-w-[100px]"></div>
+            </article>
+          ) : blogs.length === 0 ? (
             <p>No blogs found.</p>
           ) : (
             blogs.map((blog) => (
@@ -141,12 +152,20 @@ export default function BlogPage() {
                 key={blog._id}
                 className="p-6 border rounded-lg space-y-4"
               >
-                <h2 className="text-2xl font-bold">{blog.title}</h2>
-                <p className="whitespace-pre-wrap">{blog.content}</p>
+                <div className="flex justify-between items-start">
+                  <h2 className="text-2xl font-bold">{blog.title}</h2>
+                  {session?.user?.email === blog.author.email && (
+                    <button
+                      onClick={() => handleDelete(blog._id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      Delete
+                    </button>
+                  )}
+                </div>
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(blog.content) }} />
                 <div className="text-sm text-gray-500">
-                  <p>
-                    Written by {blog.author.name}
-                  </p>
+                  <p>Written by {blog.author.name}</p>
                   <p>
                     Posted on{" "}
                     {new Date(blog.createdAt).toLocaleDateString("en-US", {

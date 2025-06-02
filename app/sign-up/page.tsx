@@ -14,6 +14,7 @@ const Page = () => {
 
   const [data, setData] = useState({
     name: "",
+    phone: "",
     email: "",
     password: "",
   });
@@ -30,6 +31,7 @@ const Page = () => {
         email: data.email,
         password: data.password,
         name: data.name,
+        phone: data.phone,
         callbackURL: "/",
       });
       if (res.error) {
@@ -60,6 +62,14 @@ const Page = () => {
           onChange={(e) => setData({ ...data, name: e.target.value })}
           disabled={loading}
           required
+        />
+        <input
+          type="text"
+          placeholder="Phone"
+          className="border-2 border-gray-300 rounded-md p-2"
+          value={data.phone}
+          onChange={(e) => setData({ ...data, phone: e.target.value })}
+          disabled={loading}
         />
         <input
           type="email"

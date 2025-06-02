@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@types/bcrypt": "^5.0.2",
+    "@types/dompurify": "^3.0.5",
     "axios": "^1.9.0",
     "bcrypt": "^6.0.0",
     "better-auth": "^1.2.8",
+    "dompurify": "^3.2.6",
     "mongodb": "^6.16.0",
     "mongoose": "^8.15.1",
     "next": "15.3.3",
