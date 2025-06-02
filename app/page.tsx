@@ -1,12 +1,12 @@
 "use client";
 
+import UsersList from "@/components/UsersList/UsersList";
 import { authClient } from "@/lib/auth-client";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
-
   const { data: session, isPending, error, refetch } = authClient.useSession();
 
   return (
@@ -27,7 +27,7 @@ export default function Home() {
         </div>
       )}
       <h1 className="text-4xl font-bold">Better Auth Test</h1>
-      <p className="text-lg">By Dantelo</p>
+      <p className="text-lg">By <a target="_blank" href="https://dantelo.dev/" className="text-blue-500 underline">Dantelo</a></p>
       {session && session.user ? (
         <button
           className="text-blue-500 underline cursor-pointer"
@@ -55,6 +55,7 @@ export default function Home() {
       ) : (
         <></>
       )}
+      <UsersList />
     </div>
   );
 }
