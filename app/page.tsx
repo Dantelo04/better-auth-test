@@ -26,23 +26,37 @@ export default function Home() {
           <p>Loading...</p>
         </div>
       )}
-      <h1 className="text-4xl font-bold">Better Auth Test</h1>
-      <p className="text-lg">By <a target="_blank" href="https://dantelo.dev/" className="text-blue-500 underline">Dantelo</a></p>
-      {session && session.user ? (
-        <button
-          className="text-blue-500 underline cursor-pointer"
-          onClick={async () =>
-            await authClient.signOut({
-              fetchOptions: {
-                onSuccess: () => {
-                  router.push("/sign-in");
-                },
-              },
-            })
-          }
+      <h1 className="text-6xl font-bold">Better Auth Test</h1>
+      <p className="text-lg">
+        By{" "}
+        <a
+          target="_blank"
+          href="https://dantelo.dev/"
+          className="text-blue-500 underline"
         >
-          Sign Out
-        </button>
+          Dantelo
+        </a>
+      </p>
+      {session && session.user ? (
+        <div className="flex flex-col gap-2">
+          <Link href="/blog" className="text-blue-500 underline">
+            Create Blog
+          </Link>
+          <button
+            className="text-blue-500 underline cursor-pointer"
+            onClick={async () =>
+              await authClient.signOut({
+                fetchOptions: {
+                  onSuccess: () => {
+                    router.push("/sign-in");
+                  },
+                },
+              })
+            }
+          >
+            Sign Out
+          </button>
+        </div>
       ) : !isPending ? (
         <>
           <Link href="/sign-in" className="text-blue-500 underline">
